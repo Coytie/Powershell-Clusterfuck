@@ -1,0 +1,1 @@
+Get-ADUser -Filter * -Properties TargetAddress -searchbase "OU=Folder,DC=barden,DC=local" -SearchScope Subtree | Where {$_.TargetAddress -notmatch '@brendenit.mail.onmicrosoft.com' -and $_.Enabled -match 'True'} | Select Name,SamAccountName,TargetAddress | Out-File C:\Temp\TargetAddress.txt
