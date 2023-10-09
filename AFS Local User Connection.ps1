@@ -2,8 +2,19 @@
 $DriveLetter = "O"
 $ConnectAFSDriveTask = "ConnectAzureFileShare_" + $DriveLetter
 
-# Save the password so the drive will persist on reboot
-<input the AFS Share Key cmd here>
+# This will check that the machine is joined to the AzureAD tenancy - 3 requirements must be met otherwise it will delete the key and the drive if it exists.
+# This is to get around the machine not being joined to AzureAD and if it is, it must match the name and id of the tenancy.
+$AADJ = (dsregcmd /status | select-string "AzureAdJoined")
+$TenName = (dsregcmd /status | select-string "TenantName")
+$TenID = (dsregcmd /status | select-string "TenantId")
+
+if (($AADJ -match "YES") -and ($TenName -match "Company Name Pty Ltd") -and ($TenID -match "Tenant-ID-of-Company-Name")) {
+    cmd.exe /C "cmdkey /add:`"companyname.file.core.windows.net`" /user:`"localhost\storagename`" /pass `"the storage access key pass this is used for the connection share`""
+} else {
+    cmd.exe /C 'cmdkey /delete:"companyname.file.core.windows.net"'
+    cmd.exe /c 'net use O: /delete' #change the letter before :
+    exit
+}
 
 function Test-Administrator {
     $User = [Security.Principal.WindowsIdentity]::GetCurrent();
